@@ -9,13 +9,15 @@ The fake GCP validator mimics the behavior of a real GCP validation adapter by:
 - Supporting multiple test scenarios (success, failure, hang, crash, etc.)
 - Running in a Kubernetes Job with a status-reporter sidecar
 - Using the same contract as the real validator
+- Embedding the validator script directly in the Job YAML (no custom container image required)
 
 ## Features
 
 - **Multiple Test Scenarios**: Simulate different validation outcomes
-- **No External Dependencies**: No actual GCP API calls required
+- **No External Dependencies**: No actual GCP API calls or custom container images required
 - **Quick Feedback**: Instant results for testing the validation framework
 - **Easy Configuration**: Simple environment variable configuration
+- **Zero Build Overhead**: Script embedded directly in Job YAML - no container build/push needed
 
 ## Supported Scenarios
 
@@ -34,7 +36,6 @@ The validator supports the following simulation scenarios via the `SIMULATE_RESU
 
 ### Prerequisites
 
-- Container runtime (Docker or Podman)
 - Kubernetes cluster (for running jobs)
 - kubectl configured
 
@@ -48,37 +49,24 @@ make test
 
 This runs the validator through different scenarios and displays the output.
 
-### Building the Container Image
-
-Build for development:
-
-```bash
-QUAY_USER=your-username make image-dev
-```
-
-Build for production:
-
-```bash
-make image
-```
-
 ### Deploying to Kubernetes
 
-1. **Apply RBAC configuration for Job Status Reporter** (replace `<namespace>` with your actual namespace):
+1. **Apply RBAC configuration** (replace `<namespace>` with your actual namespace):
    ```bash
    sed 's/<namespace>/your-namespace/g' rbac.yaml | kubectl apply -f -
    ```
 
 2. **Run a test job using the template**:
-Replace the `<scenario>` with `success`, `failure`, `hang`, `crash`, `invalid-json` or `missing-status` for different scenarios.
+   Replace `<scenario>` with `success`, `failure`, `hang`, `crash`, `invalid-json`, or `missing-status`:
    ```bash
    # Replace placeholders and apply
    sed -e 's|<scenario>|success|g' \
        -e 's|<namespace>|your-namespace|g' \
-       -e 's|<fake-validator-image>|quay.io/rh-ee-dawang/fake-gcp-validator:dev-3253941|g' \
        -e 's|<status-reporter-image>|quay.io/rh-ee-dawang/status-reporter:dev-04e8d0a|g' \
        job-template.yaml | kubectl apply -f -
    ```
+
+Note: No custom container image is required. The Job uses the standard `alpine:3.19` image with an embedded validation script.
 
 ## Configuration
 
@@ -99,7 +87,6 @@ The `job-template.yaml` file includes the following placeholders that should be 
 |-------------|-------------|----------------|
 | `<namespace>` | Your Kubernetes namespace | `default`, `validation-testing` |
 | `<scenario>` | The test scenario to run | `success`, `failure`, `hang`, `crash`, `invalid-json`, `missing-status` |
-| `<fake-validator-image>` | The fake-validator container image | `quay.io/rh-ee-dawang/fake-gcp-validator:dev-3253941` |
 | `<status-reporter-image>` | The status-reporter container image | `quay.io/rh-ee-dawang/status-reporter:dev-04e8d0a` |
 
 The `<scenario>` placeholder is used in multiple places:
@@ -191,11 +178,9 @@ kubectl get job fake-validator-<scenario> -n <namespace> -o jsonpath='{.status.c
 
 ## Files
 
-- `validate.sh`: Main validation script with scenario logic
-- `Dockerfile`: Container image definition
-- `Makefile`: Build and test automation
+- `job-template.yaml`: Kubernetes Job template with embedded validation script
 - `rbac.yaml`: Kubernetes RBAC configuration (ServiceAccount, Role, RoleBinding)
-- `job-template.yaml`: Kubernetes Job template with `<namespace>` and `<scenario>` placeholders
+- `Makefile`: Local testing automation
 - `README.md`: This file
 
 ## License
