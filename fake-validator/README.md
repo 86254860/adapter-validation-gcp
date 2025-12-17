@@ -170,7 +170,6 @@ kubectl get job fake-validator-<scenario> -n <namespace> -o jsonpath='{.status.c
 
 - `job-template.yaml`: Kubernetes Job template with embedded validation script
 - `rbac.yaml`: Kubernetes RBAC configuration (ServiceAccount, Role, RoleBinding)
-- `Makefile`: Local testing automation
 - `README.md`: This file
 
 ## License
