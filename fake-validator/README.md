@@ -39,16 +39,6 @@ The validator supports the following simulation scenarios via the `SIMULATE_RESU
 - Kubernetes cluster (for running jobs)
 - kubectl configured
 
-### Local Testing
-
-Test the validator script locally:
-
-```bash
-make test
-```
-
-This runs the validator through different scenarios and displays the output.
-
 ### Deploying to Kubernetes
 
 1. **Apply RBAC configuration** (replace `<namespace>` with your actual namespace):
