@@ -1,0 +1,16 @@
+# RabbitMQ Broker Configuration
+# Processed via Helm tpl function
+
+broker:
+  type: rabbitmq
+
+  rabbitmq:
+    url: {{ required "broker.rabbitmq.url is required when broker.type=rabbitmq" .Values.broker.rabbitmq.url | quote }}
+    exchange_type: topic
+    prefetch_count: 10
+    publisher_confirm: false
+
+subscriber:
+  parallelism: {{ .Values.broker.subscriber.parallelism | default 1 | int }}
+
+log_config: false
