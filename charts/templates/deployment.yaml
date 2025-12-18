@@ -1,0 +1,138 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "validation-gcp.fullname" . }}
+  labels:
+    {{- include "validation-gcp.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "validation-gcp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-app.yaml") . | sha256sum }}
+        {{- if .Values.broker.type }}
+        checksum/broker-config: {{ include (print $.Template.BasePath "/configmap-broker.yaml") . | sha256sum }}
+        {{- end }}
+      labels:
+        {{- include "validation-gcp.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "validation-gcp.serviceAccountName" . }}
+      securityContext:
+        fsGroup: 65532
+        runAsNonRoot: true
+        runAsUser: 65532
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            seccompProfile:
+              type: RuntimeDefault
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /app/adapter
+          args:
+            - serve
+            - -v={{ .Values.logging.verbosity | default 2 }}
+            {{- if .Values.logging.logtostderr }}
+            - --logtostderr
+            {{- end }}
+          env:
+            {{- with .Values.env }}
+            {{- range . }}
+            - name: {{ .name }}
+              {{- if .value }}
+              value: {{ .value | quote }}
+              {{- else if .valueFrom }}
+              valueFrom:
+                {{- toYaml .valueFrom | nindent 16 }}
+              {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.hyperfleetApi.baseUrl }}
+            - name: HYPERFLEET_API_BASE_URL
+              value: {{ .Values.hyperfleetApi.baseUrl | quote }}
+            {{- end }}
+            - name: HYPERFLEET_API_VERSION
+              value: {{ .Values.hyperfleetApi.version | default "v1" | quote }}
+            - name: ADAPTER_CONFIG_PATH
+              value: /etc/adapter/adapter.yaml
+            {{- if .Values.broker.type }}
+            - name: BROKER_CONFIG_FILE
+              value: /etc/broker/broker.yaml
+            {{- if eq .Values.broker.type "googlepubsub" }}
+            - name: BROKER_SUBSCRIPTION_ID
+              value: {{ .Values.broker.googlepubsub.subscription | quote }}
+            - name: BROKER_TOPIC
+              value: {{ .Values.broker.googlepubsub.topic | quote }}
+            - name: GCP_PROJECT_ID
+              value: {{ .Values.broker.googlepubsub.projectId | quote }}
+            {{- end }}
+            {{- end }}
+            {{- if eq .Values.deploymentMode "fake" }}
+            # Fake validation specific environment variables
+            - name: STATUS_REPORTER_IMAGE
+              value: {{ .Values.validation.statusReporterImage | quote }}
+            - name: SIMULATE_RESULT
+              value: {{ .Values.validation.fake.simulateResult | quote }}
+            - name: RESULTS_PATH
+              value: {{ .Values.validation.fake.resultsPath | quote }}
+            - name: MAX_WAIT_TIME_SECONDS
+              value: {{ .Values.validation.fake.maxWaitTimeSeconds | quote }}
+            {{- end }}
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: adapter-config
+              mountPath: /etc/adapter
+              readOnly: true
+            {{- if .Values.broker.type }}
+            - name: broker-config
+              mountPath: /etc/broker/broker.yaml
+              subPath: broker.yaml
+              readOnly: true
+            {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: adapter-config
+          configMap:
+            name: {{ include "validation-gcp.configMapName" . }}
+        {{- if .Values.broker.type }}
+        - name: broker-config
+          configMap:
+            name: {{ include "validation-gcp.brokerConfigMapName" . }}
+            items:
+              - key: broker.yaml
+                path: broker.yaml
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,26 @@
+{{- if .Values.broker.type }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "validation-gcp.brokerConfigMapName" . }}
+  labels:
+    {{- include "validation-gcp.labels" . | nindent 4 }}
+    app.kubernetes.io/component: broker-config
+    {{- if .Values.broker.type }}
+    hyperfleet.io/broker-type: {{ .Values.broker.type }}
+    {{- end }}
+data:
+  # Broker configuration file (broker.yaml)
+  # Mounted at /etc/broker/broker.yaml and exposed via BROKER_CONFIG_FILE env var
+  broker.yaml: |
+    {{- if .Values.broker.yaml }}
+    {{- /* Use raw YAML override if provided */}}
+{{- .Values.broker.yaml | nindent 4 }}
+    {{- else if eq .Values.broker.type "rabbitmq" }}
+    {{- /* Use RabbitMQ broker config */}}
+{{ tpl (.Files.Get "configs/broker-rabbitmq.yaml") . | indent 4 }}
+    {{- else }}
+    {{- /* Use Google Pub/Sub broker config (default) */}}
+{{ tpl (.Files.Get "configs/broker-pubsub.yaml") . | indent 4 }}
+    {{- end }}
+{{- end }}

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "validation-gcp.configMapName" . }}
+  labels:
+    {{- include "validation-gcp.labels" . | nindent 4 }}
+    app.kubernetes.io/component: adapter
+data:
+  # Adapter configuration file
+  # Dynamically loaded based on deploymentMode
+  # Edit charts/configs/adapter-fake-validation-gcp.yaml or adapter-validation-gcp.yaml to customize
+  adapter.yaml: |
+{{ .Files.Get (printf "configs/%s" (include "validation-gcp.adapterConfigFile" .)) | nindent 4 }}
+  {{- if eq .Values.deploymentMode "fake" }}
+  # Job template referenced by the adapter config
+  fake-validation-gcp-job.yaml: |
+{{ .Files.Get "configs/fake-validation-gcp-job.yaml" | nindent 4 }}
+  {{- end }}
