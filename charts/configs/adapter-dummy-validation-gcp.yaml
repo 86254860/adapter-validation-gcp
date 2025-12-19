@@ -5,7 +5,7 @@
 apiVersion: hyperfleet.redhat.com/v1alpha1
 kind: AdapterConfig
 metadata:
-  name: fake-gcp-validation-adapter
+  name: dummy-gcp-validation-adapter
   namespace: hyperfleet-system
   labels:
     hyperfleet.io/adapter-type: validation
@@ -119,7 +119,7 @@ spec:
           namespace: "{{ .clusterId | lower }}"
           labels:
             hyperfleet.io/cluster-id: "{{ .clusterId }}"
-            hyperfleet.io/managed-by: "fake-gcp-validation-adapter"
+            hyperfleet.io/managed-by: "dummy-gcp-validation-adapter"
             hyperfleet.io/resource-type: "service-account"
           annotations:
             hyperfleet.io/created-by: "hyperfleet-adapter"
@@ -128,7 +128,7 @@ spec:
           labelSelector:
             hyperfleet.io/resource-type: "service-account"
             hyperfleet.io/cluster-id: "{{ .clusterId }}"
-            hyperfleet.io/managed-by: "fake-gcp-validation-adapter"
+            hyperfleet.io/managed-by: "dummy-gcp-validation-adapter"
     # ==========================================================================
     # Resource: Role with necessary permissions for status reporter
     # ==========================================================================
@@ -142,7 +142,7 @@ spec:
           namespace: "{{ .clusterId | lower }}"
           labels:
             hyperfleet.io/cluster-id: "{{ .clusterId }}"
-            hyperfleet.io/managed-by: "fake-gcp-validation-adapter"
+            hyperfleet.io/managed-by: "dummy-gcp-validation-adapter"
             hyperfleet.io/resource-type: "role"
           annotations:
             hyperfleet.io/created-by: "hyperfleet-adapter"
@@ -163,7 +163,7 @@ spec:
           labelSelector:
             hyperfleet.io/resource-type: "role"
             hyperfleet.io/cluster-id: "{{ .clusterId }}"
-            hyperfleet.io/managed-by: "fake-gcp-validation-adapter"
+            hyperfleet.io/managed-by: "dummy-gcp-validation-adapter"
     # ==========================================================================
     # Rolebinding to grant permissions to the service account
     # ==========================================================================
@@ -177,7 +177,7 @@ spec:
           namespace: "{{ .clusterId | lower }}"
           labels:
             hyperfleet.io/cluster-id: "{{ .clusterId }}"
-            hyperfleet.io/managed-by: "fake-gcp-validation-adapter"
+            hyperfleet.io/managed-by: "dummy-gcp-validation-adapter"
             hyperfleet.io/resource-type: "role-binding"
           annotations:
             hyperfleet.io/created-by: "hyperfleet-adapter"
@@ -194,19 +194,19 @@ spec:
           labelSelector:
             hyperfleet.io/resource-type: "role-binding"
             hyperfleet.io/cluster-id: "{{ .clusterId }}"
-            hyperfleet.io/managed-by: "fake-gcp-validation-adapter"
+            hyperfleet.io/managed-by: "dummy-gcp-validation-adapter"
     # ==========================================================================
     # Resource: GCP Validation Job
     # ==========================================================================
     - name: "gcpValidationJob"
       manifest:
-        ref: "./fake-validation-gcp-job.yaml"
+        ref: "./dummy-validation-gcp-job.yaml"
       discovery:
         bySelectors:
           labelSelector:
             hyperfleet.io/resource-type: "validation-job"
             hyperfleet.io/cluster-id: "{{ .clusterId }}"
-            hyperfleet.io/managed-by: "fake-gcp-validation-adapter"
+            hyperfleet.io/managed-by: "dummy-gcp-validation-adapter"
   # ============================================================================
   # Post-Processing
   # ============================================================================

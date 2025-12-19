@@ -21,7 +21,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: fake-validator-<scenario>
+  name: dummy-validator-<scenario>
   namespace: <namespace>
 spec:
   backoffLimit: 0
@@ -30,7 +30,7 @@ spec:
     metadata:
       labels:
         app: gcp-validator
-        job-name: fake-validator-<scenario>
+        job-name: dummy-validator-<scenario>
     spec:
       serviceAccountName: gcp-validator
       restartPolicy: Never
@@ -41,8 +41,8 @@ spec:
         emptyDir: {}
 
       containers:
-      # Adapter container (fake-validator)
-      - name: fake-validator
+      # Adapter container (dummy-validator)
+      - name: dummy-validator
         image: alpine:3.19
         imagePullPolicy: IfNotPresent
         command: ["/bin/sh", "-c"]
@@ -54,7 +54,7 @@ spec:
             RESULTS_PATH="${RESULTS_PATH:-/results/adapter-result.json}"
             SIMULATE_RESULT="${SIMULATE_RESULT:-success}"
 
-            echo "Fake GCP Validator starting..."
+            echo "Dummy GCP Validator starting..."
             echo "Simulating result: ${SIMULATE_RESULT}"
             echo "Results path: ${RESULTS_PATH}"
 
@@ -95,7 +95,7 @@ spec:
                   "compute.instances.list",
                   "iam.serviceAccounts.get"
                 ],
-                "service_account": "fake-sa@project.iam.gserviceaccount.com",
+                "service_account": "dummy-sa@project.iam.gserviceaccount.com",
                 "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
               }
             }
@@ -174,7 +174,7 @@ spec:
         env:
         # Required environment variables
         - name: JOB_NAME
-          value: "fake-validator-<scenario>"
+          value: "dummy-validator-<scenario>"
         - name: JOB_NAMESPACE
           valueFrom:
             fieldRef:
@@ -196,7 +196,7 @@ spec:
         - name: LOG_LEVEL
           value: "info"
         - name: ADAPTER_CONTAINER_NAME
-          value: "fake-validator"
+          value: "dummy-validator"
 
         volumeMounts:
         - name: results

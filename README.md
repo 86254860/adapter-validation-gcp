@@ -22,10 +22,10 @@ Event-driven adapter for HyperFleet GCP cluster validation. Validates GCP cluste
 
 This adapter supports two deployment modes via the `deploymentMode` parameter:
 
-### Fake Mode (Current)
-- **Value**: `deploymentMode: "fake"`
+### Dummy Mode (Current)
+- **Value**: `deploymentMode: "dummy"`
 - **Description**: Simulates GCP validation for testing and development
-- **Config File**: Uses `charts/configs/adapter-fake-validation-gcp.yaml`
+- **Config File**: Uses `charts/configs/adapter-dummy-validation-gcp.yaml`
 - **Features**:
   - Configurable simulation results (success, failure, hang, crash, etc.)
   - No actual GCP API calls
@@ -115,7 +115,7 @@ BROKER_TYPE=rabbitmq ./run-local.sh
 
 ### Installing the Chart
 
-**Fake Validation Mode (Default):**
+**Dummy Validation Mode (Default):**
 
 ```bash
 helm install validation-gcp ./charts/ \
@@ -129,10 +129,10 @@ helm install validation-gcp ./charts/ \
 **With Specific Deployment Mode:**
 
 ```bash
-# Fake mode (simulated validation)
+# Dummy mode (simulated validation)
 helm install validation-gcp ./charts/ \
-  --set deploymentMode=fake \
-  --set validation.fake.simulateResult=success \
+  --set deploymentMode=dummy \
+  --set validation.dummy.simulateResult=success \
   --set broker.type=googlepubsub \
   --set broker.googlepubsub.projectId=my-gcp-project \
   --set broker.googlepubsub.topic=my-topic \
@@ -174,7 +174,7 @@ All configurable parameters are in `values.yaml`. For advanced customization, mo
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `deploymentMode` | Deployment mode: "fake" or "real" | `"fake"` |
+| `deploymentMode` | Deployment mode: "dummy" or "real" | `"dummy"` |
 
 ### Image & Replica
 
@@ -262,13 +262,13 @@ When `rbac.create=true`, the adapter gets **minimal permissions** needed for val
 |-----------|-------------|---------|
 | `validation.statusReporterImage` | Status reporter sidecar image | `quay.io/rh-ee-dawang/status-reporter:dev-04e8d0a` |
 
-#### Fake Validation Mode Settings
+#### Dummy Validation Mode Settings
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `validation.fake.simulateResult` | Simulated result (success, failure, hang, crash, invalid-json, missing-status) | `"success"` |
-| `validation.fake.resultsPath` | Path where validation results are written | `"/results/adapter-result.json"` |
-| `validation.fake.maxWaitTimeSeconds` | Maximum time to wait for validation completion | `"300"` |
+| `validation.dummy.simulateResult` | Simulated result (success, failure, hang, crash, invalid-json, missing-status) | `"success"` |
+| `validation.dummy.resultsPath` | Path where validation results are written | `"/results/adapter-result.json"` |
+| `validation.dummy.maxWaitTimeSeconds` | Maximum time to wait for validation completion | `"300"` |
 
 ### Environment Variables
 
@@ -290,11 +290,11 @@ env:
 
 ## Examples
 
-### Basic Fake Validation with Google Pub/Sub
+### Basic Dummy Validation with Google Pub/Sub
 
 ```bash
 helm install validation-gcp ./charts/ \
-  --set deploymentMode=fake \
+  --set deploymentMode=dummy \
   --set broker.type=googlepubsub \
   --set broker.googlepubsub.projectId=my-gcp-project \
   --set broker.googlepubsub.topic=my-topic \
@@ -302,12 +302,12 @@ helm install validation-gcp ./charts/ \
   --set hyperfleetApi.baseUrl=https://api.hyperfleet.example.com
 ```
 
-### Fake Validation with Different Simulation Results
+### Dummy Validation with Different Simulation Results
 
 ```bash
 # Simulate failure
 helm install validation-gcp ./charts/ \
-  --set validation.fake.simulateResult=failure \
+  --set validation.dummy.simulateResult=failure \
   --set broker.type=googlepubsub \
   --set broker.googlepubsub.projectId=my-gcp-project \
   --set broker.googlepubsub.topic=my-topic \
@@ -315,8 +315,8 @@ helm install validation-gcp ./charts/ \
 
 # Simulate hang (for timeout testing)
 helm install validation-gcp ./charts/ \
-  --set validation.fake.simulateResult=hang \
-  --set validation.fake.maxWaitTimeSeconds=60 \
+  --set validation.dummy.simulateResult=hang \
+  --set validation.dummy.maxWaitTimeSeconds=60 \
   --set broker.type=googlepubsub \
   ...
 ```
@@ -325,7 +325,7 @@ helm install validation-gcp ./charts/ \
 
 ```bash
 helm install validation-gcp ./charts/ \
-  --set deploymentMode=fake \
+  --set deploymentMode=dummy \
   --set broker.type=rabbitmq \
   --set broker.rabbitmq.url="amqp://user:password@rabbitmq.svc:5672/"
 ```
@@ -356,7 +356,7 @@ Then deploy:
 helm install validation-gcp ./charts/ \
   --namespace hyperfleet-system \
   --create-namespace \
-  --set deploymentMode=fake \
+  --set deploymentMode=dummy \
   --set image.registry=us-central1-docker.pkg.dev/my-project/my-repo \
   --set image.repository=hyperfleet-adapter \
   --set image.tag=v0.1.0 \
@@ -374,7 +374,7 @@ helm install validation-gcp ./charts/ \
 <summary>Example <code>my-values.yaml</code></summary>
 
 ```yaml
-deploymentMode: fake
+deploymentMode: dummy
 
 replicaCount: 1
 
@@ -408,7 +408,7 @@ broker:
 
 validation:
   statusReporterImage: quay.io/rh-ee-dawang/status-reporter:dev-04e8d0a
-  fake:
+  dummy:
     simulateResult: success
     resultsPath: /results/adapter-result.json
     maxWaitTimeSeconds: "300"
@@ -435,10 +435,10 @@ The deployment sets these environment variables automatically:
 | `BROKER_SUBSCRIPTION_ID` | From `broker.googlepubsub.subscription` | When `broker.type=googlepubsub` |
 | `BROKER_TOPIC` | From `broker.googlepubsub.topic` | When `broker.type=googlepubsub` |
 | `GCP_PROJECT_ID` | From `broker.googlepubsub.projectId` | When `broker.type=googlepubsub` |
-| `STATUS_REPORTER_IMAGE` | From `validation.statusReporterImage` | When `deploymentMode=fake` |
-| `SIMULATE_RESULT` | From `validation.fake.simulateResult` | When `deploymentMode=fake` |
-| `RESULTS_PATH` | From `validation.fake.resultsPath` | When `deploymentMode=fake` |
-| `MAX_WAIT_TIME_SECONDS` | From `validation.fake.maxWaitTimeSeconds` | When `deploymentMode=fake` |
+| `STATUS_REPORTER_IMAGE` | From `validation.statusReporterImage` | When `deploymentMode=dummy` |
+| `SIMULATE_RESULT` | From `validation.dummy.simulateResult` | When `deploymentMode=dummy` |
+| `RESULTS_PATH` | From `validation.dummy.resultsPath` | When `deploymentMode=dummy` |
+| `MAX_WAIT_TIME_SECONDS` | From `validation.dummy.maxWaitTimeSeconds` | When `deploymentMode=dummy` |
 
 ## License
 

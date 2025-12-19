@@ -8,11 +8,11 @@ metadata:
 data:
   # Adapter configuration file
   # Dynamically loaded based on deploymentMode
-  # Edit charts/configs/adapter-fake-validation-gcp.yaml or adapter-validation-gcp.yaml to customize
+  # Edit charts/configs/adapter-dummy-validation-gcp.yaml or adapter-validation-gcp.yaml to customize
   adapter.yaml: |
 {{ .Files.Get (printf "configs/%s" (include "validation-gcp.adapterConfigFile" .)) | nindent 4 }}
-  {{- if eq .Values.deploymentMode "fake" }}
+  {{- if eq .Values.deploymentMode "dummy" }}
   # Job template referenced by the adapter config
-  fake-validation-gcp-job.yaml: |
-{{ .Files.Get "configs/fake-validation-gcp-job.yaml" | nindent 4 }}
+  dummy-validation-gcp-job.yaml: |
+{{ .Files.Get "configs/dummy-validation-gcp-job.yaml" | nindent 4 }}
   {{- end }}

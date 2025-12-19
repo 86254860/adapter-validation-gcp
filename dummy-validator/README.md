@@ -1,10 +1,10 @@
-# Fake GCP Validator
+# Dummy GCP Validator
 
 A simulated GCP validator for testing the adapter framework without making actual GCP API calls. This tool is designed for local development, testing, and CI/CD pipelines.
 
 ## Overview
 
-The fake GCP validator mimics the behavior of a real GCP validation adapter by:
+The dummy GCP validator mimics the behavior of a real GCP validation adapter by:
 - Writing validation results in the expected JSON format
 - Supporting multiple test scenarios (success, failure, hang, crash, etc.)
 - Running in a Kubernetes Job with a status-reporter sidecar
@@ -62,7 +62,7 @@ Note: No custom container image is required. The Job uses the standard `alpine:3
 
 ### Environment Variables
 
-The fake validator accepts the following environment variables:
+The dummy validator accepts the following environment variables:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
@@ -80,8 +80,8 @@ The `job-template.yaml` file includes the following placeholders that should be 
 | `<status-reporter-image>` | The status-reporter container image | `quay.io/rh-ee-dawang/status-reporter:dev-04e8d0a` |
 
 The `<scenario>` placeholder is used in multiple places:
-- Job name: `fake-validator-<scenario>`
-- Job labels: `job-name: fake-validator-<scenario>`
+- Job name: `dummy-validator-<scenario>`
+- Job labels: `job-name: dummy-validator-<scenario>`
 - Environment variable: `SIMULATE_RESULT: <scenario>`
 
 ## Example Results
@@ -113,7 +113,7 @@ The `<scenario>` placeholder is used in multiple places:
       "compute.instances.list",
       "iam.serviceAccounts.get"
     ],
-    "service_account": "fake-sa@project.iam.gserviceaccount.com",
+    "service_account": "dummy-sa@project.iam.gserviceaccount.com",
     "timestamp": "2025-12-15T10:30:00Z"
   }
 }
@@ -123,32 +123,32 @@ The `<scenario>` placeholder is used in multiple places:
 
 Check job status:
 ```bash
-kubectl get job fake-validator-<scenario> -n <namespace>
+kubectl get job dummy-validator-<scenario> -n <namespace>
 ```
 
 View job logs:
 ```bash
 # Validator container logs
-kubectl logs -n <namespace> -l job-name=fake-validator-<scenario> -c fake-validator
+kubectl logs -n <namespace> -l job-name=dummy-validator-<scenario> -c dummy-validator
 
 # Status reporter logs
-kubectl logs -n <namespace> -l job-name=fake-validator-<scenario> -c status-reporter
+kubectl logs -n <namespace> -l job-name=dummy-validator-<scenario> -c status-reporter
 ```
 
 Check job conditions (set by status-reporter):
 ```bash
-kubectl get job fake-validator-<scenario> -n <namespace> -o jsonpath='{.status.conditions}' | jq
+kubectl get job dummy-validator-<scenario> -n <namespace> -o jsonpath='{.status.conditions}' | jq
 ```
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────┐
-│           Kubernetes Job                │
-├─────────────────────────────────────────┤
-│                                         │
+┌────────────────────────────────────────┐
+│           Kubernetes Job               │
+├────────────────────────────────────────┤
+│                                        │
 │  ┌──────────────────┐  ┌─────────────┐ │
-│  │ fake-validator   │  │   status-   │ │
+│  │ dummy-validator  │  │   status-   │ │
 │  │                  │  │   reporter  │ │
 │  │ - Writes result  │  │             │ │
 │  │   to shared vol  │  │ - Monitors  │ │
@@ -163,7 +163,7 @@ kubectl get job fake-validator-<scenario> -n <namespace> -o jsonpath='{.status.c
 │           │  Shared Volume   │         │
 │           │  /results/       │         │
 │           └──────────────────┘         │
-└─────────────────────────────────────────┘
+└────────────────────────────────────────┘
 ```
 
 ## Files

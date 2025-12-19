@@ -154,7 +154,7 @@ envsubst < "$BROKER_CONFIG_TEMPLATE" > "$BROKER_CONFIG"
 
 # Set config paths
 export BROKER_CONFIG_FILE="$BROKER_CONFIG"
-export ADAPTER_CONFIG_PATH="./charts/configs/adapter-fake-validation-gcp.yaml"
+export ADAPTER_CONFIG_PATH="./charts/configs/adapter-dummy-validation-gcp.yaml"
 
 echo "Starting adapter..."
 echo "  Broker type: $BROKER_TYPE"

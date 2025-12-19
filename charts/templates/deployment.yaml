@@ -80,16 +80,16 @@ spec:
               value: {{ .Values.broker.googlepubsub.projectId | quote }}
             {{- end }}
             {{- end }}
-            {{- if eq .Values.deploymentMode "fake" }}
-            # Fake validation specific environment variables
+            {{- if eq .Values.deploymentMode "dummy" }}
+            # Dummy validation specific environment variables
             - name: STATUS_REPORTER_IMAGE
               value: {{ .Values.validation.statusReporterImage | quote }}
             - name: SIMULATE_RESULT
-              value: {{ .Values.validation.fake.simulateResult | quote }}
+              value: {{ .Values.validation.dummy.simulateResult | quote }}
             - name: RESULTS_PATH
-              value: {{ .Values.validation.fake.resultsPath | quote }}
+              value: {{ .Values.validation.dummy.resultsPath | quote }}
             - name: MAX_WAIT_TIME_SECONDS
-              value: {{ .Values.validation.fake.maxWaitTimeSeconds | quote }}
+              value: {{ .Values.validation.dummy.maxWaitTimeSeconds | quote }}
             {{- end }}
           resources:
             limits:

@@ -3,9 +3,9 @@
 # Only environment-specific settings are exposed here.
 # For advanced customization, modify the templates directly.
 
-# Deployment mode: "fake" for fake-gcp-validation, "real" for gcp-validation
-# Currently only "fake" is supported
-deploymentMode: "fake"  # "fake" or "real"
+# Deployment mode: "dummy" for dummy-gcp-validation, "real" for gcp-validation
+# Currently only "dummy" is supported
+deploymentMode: "dummy"  # "dummy" or "real"
 
 replicaCount: 1
 
@@ -73,13 +73,13 @@ hyperfleetApi:
   baseUrl: ""
   version: "v1"
 
-# Validation-specific configuration (only for fake mode)
+# Validation-specific configuration (only for dummy mode)
 validation:
   # Status reporter image (sidecar container)
   statusReporterImage: "quay.io/rh-ee-dawang/status-reporter:dev-04e8d0a"
 
-  # Fake validation simulation settings
-  fake:
+  # Dummy validation simulation settings
+  dummy:
     # Simulated result: success, failure, hang, crash, invalid-json, missing-status
     simulateResult: "success"
     # Path where validation results are written
