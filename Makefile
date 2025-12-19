@@ -6,8 +6,8 @@
 #   make helm-template     - Render helm templates
 #   make helm-test         - Run all helm tests
 
-.PHONY: help helm-lint helm-template helm-template-broker helm-template-rabbitmq helm-test helm-dry-run helm-package \
-        helm-template-full helm-template-dummy helm-template-real test-helm \
+.PHONY: help helm-lint helm-template helm-template-broker helm-template-rabbitmq helm-dry-run helm-package \
+        helm-template-full helm-template-dummy helm-template-real helm-test\
         helm-install helm-upgrade helm-uninstall helm-status \
         run-local validate-adapter-yaml validate-broker-pubsub validate-broker-rabbitmq validate-dummy-task validate
 
@@ -82,7 +82,7 @@ helm-template-dummy: ## Render helm templates with dummy validation mode
 
 helm-template-full: helm-template-dummy ## Alias for helm-template-dummy (full dummy configuration)
 
-test-helm: helm-lint helm-template-broker helm-template-rabbitmq helm-template-dummy ## Run all helm chart tests (lint + template rendering)
+helm-test: helm-lint helm-template-broker helm-template-rabbitmq helm-template-dummy ## Run all helm chart tests (lint + template rendering)
 	@echo "$(GREEN)All helm chart tests passed!$(NC)"
 
 helm-dry-run: ## Simulate helm install (requires cluster connection)
