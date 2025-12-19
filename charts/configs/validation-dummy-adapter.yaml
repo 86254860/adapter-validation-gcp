@@ -5,7 +5,7 @@
 apiVersion: hyperfleet.redhat.com/v1alpha1
 kind: AdapterConfig
 metadata:
-  name: dummy-gcp-validation-adapter
+  name: dummy-validation-adapter
   namespace: hyperfleet-system
   labels:
     hyperfleet.io/adapter-type: validation
@@ -72,7 +72,7 @@ spec:
     - name: "managedByResourceName"
       source: "env.MANAGED_By_RESOURCE_NAME"
       type: "string"
-      default: "dummy-gcp-validation-adapter"
+      default: "dummy-validation-adapter"
       description: "The value for hyperfleet.io/managed-by"
     - name: "createdByResourceName"
       source: "env.CREATED_By_RESOURCE_NAME"
@@ -212,13 +212,13 @@ spec:
           labelSelector:
             hyperfleet.io/resource-type: "role-binding"
             hyperfleet.io/cluster-id: "{{ .clusterId }}"
-            hyperfleet.io/managed-by: "dummy-gcp-validation-adapter"
+            hyperfleet.io/managed-by: "{{ .managedByResourceName }}"
     # ==========================================================================
     # Resource: GCP Validation Job
     # ==========================================================================
     - name: "gcpValidationJob"
       manifest:
-        ref: "./validation-gcp-dummy-job-adapter-task.yaml"
+        ref: "./validation-dummy-job-adapter-task.yaml"
       discovery:
         bySelectors:
           labelSelector:

@@ -129,12 +129,12 @@ run-local: ## Run adapter locally (auto-sources .env if exists)
 
 ##@ Validation
 
-validate-adapter-yaml: ## Validate charts/configs/validation-gcp-dummy-adapter.yaml syntax
-	@echo "$(GREEN)Validating charts/configs/validation-gcp-dummy-adapter.yaml...$(NC)"
-	@yq '.' charts/configs/validation-gcp-dummy-adapter.yaml >/dev/null && echo "validation-gcp-dummy-adapter.yaml is valid YAML"
+validate-adapter-yaml: ## Validate charts/configs/validation-dummy-adapter.yaml syntax
+	@echo "$(GREEN)Validating charts/configs/validation-dummy-adapter.yaml...$(NC)"
+	@yq '.' charts/configs/validation-dummy-adapter.yaml >/dev/null && echo "validation-dummy-adapter.yaml is valid YAML"
 
-validate-dummy-task: ## Validate charts/configs/validation-gcp-dummy-job-adapter-task.yaml syntax
-	@echo "$(GREEN)Validating charts/configs/validation-gcp-dummy-job-adapter-task.yaml...$(NC)"
-	@yq '.' charts/configs/validation-gcp-dummy-job-adapter-task.yaml >/dev/null && echo "validation-gcp-dummy-job-adapter-task.yaml is valid YAML"
+validate-dummy-task: ## Validate charts/configs/validation-dummy-job-adapter-task.yaml syntax
+	@echo "$(GREEN)Validating charts/configs/validation-dummy-job-adapter-task.yaml...$(NC)"
+	@yq '.' charts/configs/validation-dummy-job-adapter-task.yaml >/dev/null && echo "validation-dummy-job-adapter-task.yaml is valid YAML"
 
 validate: validate-adapter-yaml validate-dummy-task ## Validate all YAML files

@@ -25,7 +25,7 @@ This adapter supports two deployment modes via the `deploymentMode` parameter:
 ### Dummy Mode (Current)
 - **Value**: `deploymentMode: "dummy"`
 - **Description**: Simulates GCP validation for testing and development
-- **Config File**: Uses `charts/configs/validation-gcp-dummy-adapter.yaml`
+- **Config File**: Uses `charts/configs/validation-dummy-adapter.yaml`
 - **Features**:
   - Configurable simulation results (success, failure, hang, crash, etc.)
   - No actual GCP API calls

@@ -80,7 +80,7 @@ Get the adapter config file name based on deployment mode
 */}}
 {{- define "validation-gcp.adapterConfigFile" -}}
 {{- if eq .Values.deploymentMode "dummy" }}
-{{- "validation-gcp-dummy-adapter.yaml" }}
+{{- "validation-dummy-adapter.yaml" }}
 {{- else if eq .Values.deploymentMode "real" }}
 {{- "validation-gcp-adapter.yaml" }}
 {{- else }}
