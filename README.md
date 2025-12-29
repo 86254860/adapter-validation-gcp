@@ -215,8 +215,9 @@ When `rbac.create=true`, the adapter gets **minimal permissions** needed for val
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `logging.verbosity` | Log verbosity level (0-10, higher = more verbose) | `2` |
-| `logging.logtostderr` | Log to stderr instead of files | `true` |
+| `logging.level` | Log level: `debug`, `info`, `warn`, `error` | `info` |
+| `logging.format` | Log format: `text`, `json` | `text` |
+| `logging.output` | Log output: `stdout`, `stderr` | `stderr` |
 
 ### Scheduling
 
@@ -390,8 +391,9 @@ rbac:
   create: true
 
 logging:
-  verbosity: 3
-  logtostderr: true
+  level: debug
+  format: json
+  output: stderr
 
 hyperfleetApi:
   baseUrl: https://api.hyperfleet.example.com

@@ -10,8 +10,8 @@ deploymentMode: "dummy"  # "dummy" or "real"
 replicaCount: 1
 
 image:
-  registry: quay.io/openshift-hyperfleet
-  repository: hyperfleet-adapter
+  registry: registry.ci.openshift.org
+  repository: ci/hyperfleet-adapter
   pullPolicy: Always
   tag: "latest"
 
@@ -36,10 +36,9 @@ rbac:
 
 # Logging configuration
 logging:
-  # Verbosity level (0-10, higher = more verbose)
-  verbosity: 2
-  # Log to stderr instead of files
-  logtostderr: true
+  level: info   # Options: debug, info, warn, error
+  format: text  # Options: text, json
+  output: stderr  # Options: stdout, stderr
 
 # Platform-specific scheduling
 nodeSelector: {}
