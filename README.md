@@ -181,8 +181,8 @@ All configurable parameters are in `values.yaml`. For advanced customization, mo
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `replicaCount` | Number of replicas | `1` |
-| `image.registry` | Image registry | `quay.io/openshift-hyperfleet` |
-| `image.repository` | Image repository | `hyperfleet-adapter` |
+| `image.registry` | Image registry | `registry.ci.openshift.org` |
+| `image.repository` | Image repository | `ci/hyperfleet-adapter` |
 | `image.tag` | Image tag | `latest` |
 | `image.pullPolicy` | Image pull policy | `Always` |
 | `imagePullSecrets` | Image pull secrets | `[]` |
@@ -380,8 +380,8 @@ deploymentMode: dummy
 replicaCount: 1
 
 image:
-  registry: quay.io/openshift-hyperfleet
-  repository: hyperfleet-adapter
+  registry: registry.ci.openshift.org
+  repository: ci/hyperfleet-adapter
   tag: latest
 
 serviceAccount:
