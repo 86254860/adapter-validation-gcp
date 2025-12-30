@@ -160,4 +160,9 @@ echo "Starting adapter..."
 echo "  Broker type: $BROKER_TYPE"
 echo "  Broker config: $BROKER_CONFIG_FILE"
 echo "  Adapter config: $ADAPTER_CONFIG_PATH"
-exec hyperfleet-adapter serve -v 2 --logtostderr "$@"
+exec hyperfleet-adapter serve \
+  --config="$ADAPTER_CONFIG_PATH" \
+  --log-level="${LOG_LEVEL:-debug}" \
+  --log-format="${LOG_FORMAT:-text}" \
+  --log-output="${LOG_OUTPUT:-stderr}" \
+  "$@"

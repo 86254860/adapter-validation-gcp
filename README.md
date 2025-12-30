@@ -181,8 +181,8 @@ All configurable parameters are in `values.yaml`. For advanced customization, mo
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `replicaCount` | Number of replicas | `1` |
-| `image.registry` | Image registry | `quay.io/openshift-hyperfleet` |
-| `image.repository` | Image repository | `hyperfleet-adapter` |
+| `image.registry` | Image registry | `registry.ci.openshift.org` |
+| `image.repository` | Image repository | `ci/hyperfleet-adapter` |
 | `image.tag` | Image tag | `latest` |
 | `image.pullPolicy` | Image pull policy | `Always` |
 | `imagePullSecrets` | Image pull secrets | `[]` |
@@ -215,8 +215,9 @@ When `rbac.create=true`, the adapter gets **minimal permissions** needed for val
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `logging.verbosity` | Log verbosity level (0-10, higher = more verbose) | `2` |
-| `logging.logtostderr` | Log to stderr instead of files | `true` |
+| `logging.level` | Log level: `debug`, `info`, `warn`, `error` | `info` |
+| `logging.format` | Log format: `text`, `json` | `text` |
+| `logging.output` | Log output: `stdout`, `stderr` | `stderr` |
 
 ### Scheduling
 
@@ -379,8 +380,8 @@ deploymentMode: dummy
 replicaCount: 1
 
 image:
-  registry: quay.io/openshift-hyperfleet
-  repository: hyperfleet-adapter
+  registry: registry.ci.openshift.org
+  repository: ci/hyperfleet-adapter
   tag: latest
 
 serviceAccount:
@@ -390,8 +391,9 @@ rbac:
   create: true
 
 logging:
-  verbosity: 3
-  logtostderr: true
+  level: debug
+  format: json
+  output: stderr
 
 hyperfleetApi:
   baseUrl: https://api.hyperfleet.example.com
