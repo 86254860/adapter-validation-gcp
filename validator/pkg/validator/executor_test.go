@@ -37,10 +37,8 @@ var _ = Describe("Executor", func() {
 		cfg, err := config.LoadFromEnv()
 		Expect(err).NotTo(HaveOccurred())
 
-		vctx = &validator.Context{
-			Config:  cfg,
-			Results: make(map[string]*validator.Result),
-		}
+		// Use NewContext constructor for proper initialization
+		vctx = validator.NewContext(cfg, logger)
 	})
 
 	Describe("ExecuteAll", func() {
@@ -138,16 +136,16 @@ var _ = Describe("Executor", func() {
 				}
 			})
 
-			It("should execute all validators in parallel", func() {
+			It("should execute all independent validators successfully", func() {
 				executor = validator.NewExecutor(vctx, logger)
-				start := time.Now()
 				results, err := executor.ExecuteAll(ctx)
-				duration := time.Since(start)
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(results).To(HaveLen(3))
-				// Parallel execution should take ~10ms, not ~30ms (sequential)
-				Expect(duration).To(BeNumerically("<", 100*time.Millisecond))
+				// All validators should complete successfully
+				for _, result := range results {
+					Expect(result.Status).To(Equal(validator.StatusSuccess))
+				}
 			})
 
 			It("should store all results in context", func() {

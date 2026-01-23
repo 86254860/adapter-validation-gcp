@@ -272,4 +272,177 @@ var _ = Describe("DependencyResolver", func() {
 			})
 		})
 	})
+
+	Describe("ToMermaid", func() {
+		Context("with validators that have no dependencies", func() {
+			BeforeEach(func() {
+				validators = []validator.Validator{
+					&MockValidator{name: "validator-a", runAfter: []string{}, enabled: true},
+					&MockValidator{name: "validator-b", runAfter: []string{}, enabled: true},
+				}
+				resolver = validator.NewDependencyResolver(validators)
+			})
+
+			It("should render standalone nodes", func() {
+				mermaid := resolver.ToMermaid()
+				Expect(mermaid).To(ContainSubstring("flowchart TD"))
+				Expect(mermaid).To(ContainSubstring("validator-a"))
+				Expect(mermaid).To(ContainSubstring("validator-b"))
+				Expect(mermaid).NotTo(ContainSubstring("-->"))
+			})
+		})
+
+		Context("with linear dependencies", func() {
+			BeforeEach(func() {
+				validators = []validator.Validator{
+					&MockValidator{name: "validator-a", runAfter: []string{}, enabled: true},
+					&MockValidator{name: "validator-b", runAfter: []string{"validator-a"}, enabled: true},
+					&MockValidator{name: "validator-c", runAfter: []string{"validator-b"}, enabled: true},
+				}
+				resolver = validator.NewDependencyResolver(validators)
+			})
+
+			It("should render dependency arrows", func() {
+				mermaid := resolver.ToMermaid()
+				Expect(mermaid).To(ContainSubstring("flowchart TD"))
+				Expect(mermaid).To(ContainSubstring("validator-b --> validator-a"))
+				Expect(mermaid).To(ContainSubstring("validator-c --> validator-b"))
+			})
+		})
+
+		Context("with complex dependencies", func() {
+			BeforeEach(func() {
+				validators = []validator.Validator{
+					&MockValidator{name: "wif-check", runAfter: []string{}, enabled: true},
+					&MockValidator{name: "api-enabled", runAfter: []string{"wif-check"}, enabled: true},
+					&MockValidator{name: "quota-check", runAfter: []string{"wif-check"}, enabled: true},
+					&MockValidator{name: "network-check", runAfter: []string{"api-enabled", "quota-check"}, enabled: true},
+				}
+				resolver = validator.NewDependencyResolver(validators)
+			})
+
+			It("should render all dependency relationships", func() {
+				mermaid := resolver.ToMermaid()
+				Expect(mermaid).To(ContainSubstring("flowchart TD"))
+				Expect(mermaid).To(ContainSubstring("api-enabled --> wif-check"))
+				Expect(mermaid).To(ContainSubstring("quota-check --> wif-check"))
+				Expect(mermaid).To(ContainSubstring("network-check --> api-enabled"))
+				Expect(mermaid).To(ContainSubstring("network-check --> quota-check"))
+			})
+		})
+
+		Context("with missing dependency", func() {
+			BeforeEach(func() {
+				validators = []validator.Validator{
+					&MockValidator{name: "validator-a", runAfter: []string{"non-existent"}, enabled: true},
+				}
+				resolver = validator.NewDependencyResolver(validators)
+			})
+
+			It("should not render edges for missing dependencies", func() {
+				mermaid := resolver.ToMermaid()
+				Expect(mermaid).To(ContainSubstring("flowchart TD"))
+				Expect(mermaid).NotTo(ContainSubstring("-->"))
+				Expect(mermaid).NotTo(ContainSubstring("non-existent"))
+			})
+		})
+	})
+
+	Describe("ToMermaidWithLevels", func() {
+		Context("with validators that have no dependencies", func() {
+			BeforeEach(func() {
+				validators = []validator.Validator{
+					&MockValidator{name: "validator-a", runAfter: []string{}, enabled: true},
+					&MockValidator{name: "validator-b", runAfter: []string{}, enabled: true},
+				}
+				resolver = validator.NewDependencyResolver(validators)
+			})
+
+			It("should render all validators in Level 0 subgraph", func() {
+				groups, _ := resolver.ResolveExecutionGroups()
+				mermaid := resolver.ToMermaidWithLevels(groups)
+
+				Expect(mermaid).To(ContainSubstring("flowchart TD"))
+				Expect(mermaid).To(ContainSubstring("subgraph \"Level 0 - 2 Validators in Parallel\""))
+				Expect(mermaid).To(ContainSubstring("validator-a"))
+				Expect(mermaid).To(ContainSubstring("validator-b"))
+			})
+		})
+
+		Context("with linear dependencies", func() {
+			BeforeEach(func() {
+				validators = []validator.Validator{
+					&MockValidator{name: "validator-a", runAfter: []string{}, enabled: true},
+					&MockValidator{name: "validator-b", runAfter: []string{"validator-a"}, enabled: true},
+					&MockValidator{name: "validator-c", runAfter: []string{"validator-b"}, enabled: true},
+				}
+				resolver = validator.NewDependencyResolver(validators)
+			})
+
+			It("should render separate levels with dependency arrows", func() {
+				groups, _ := resolver.ResolveExecutionGroups()
+				mermaid := resolver.ToMermaidWithLevels(groups)
+
+				Expect(mermaid).To(ContainSubstring("flowchart TD"))
+				Expect(mermaid).To(ContainSubstring("subgraph \"Level 0\""))
+				Expect(mermaid).To(ContainSubstring("subgraph \"Level 1\""))
+				Expect(mermaid).To(ContainSubstring("subgraph \"Level 2\""))
+				Expect(mermaid).To(ContainSubstring("validator-b --> validator-a"))
+				Expect(mermaid).To(ContainSubstring("validator-c --> validator-b"))
+			})
+		})
+
+		Context("with parallel dependencies", func() {
+			BeforeEach(func() {
+				validators = []validator.Validator{
+					&MockValidator{name: "wif-check", runAfter: []string{}, enabled: true},
+					&MockValidator{name: "api-enabled", runAfter: []string{"wif-check"}, enabled: true},
+					&MockValidator{name: "quota-check", runAfter: []string{"wif-check"}, enabled: true},
+					&MockValidator{name: "network-check", runAfter: []string{"wif-check"}, enabled: true},
+				}
+				resolver = validator.NewDependencyResolver(validators)
+			})
+
+			It("should show parallel validators in the same level", func() {
+				groups, _ := resolver.ResolveExecutionGroups()
+				mermaid := resolver.ToMermaidWithLevels(groups)
+
+				Expect(mermaid).To(ContainSubstring("flowchart TD"))
+				Expect(mermaid).To(ContainSubstring("subgraph \"Level 0\""))
+				Expect(mermaid).To(ContainSubstring("subgraph \"Level 1 - 3 Validators in Parallel\""))
+				Expect(mermaid).To(ContainSubstring("wif-check"))
+				Expect(mermaid).To(ContainSubstring("api-enabled"))
+				Expect(mermaid).To(ContainSubstring("quota-check"))
+				Expect(mermaid).To(ContainSubstring("network-check"))
+			})
+		})
+
+		Context("with complex dependency graph", func() {
+			BeforeEach(func() {
+				validators = []validator.Validator{
+					&MockValidator{name: "wif-check", runAfter: []string{}, enabled: true},
+					&MockValidator{name: "api-enabled", runAfter: []string{"wif-check"}, enabled: true},
+					&MockValidator{name: "quota-check", runAfter: []string{"wif-check"}, enabled: true},
+					&MockValidator{name: "iam-check", runAfter: []string{"api-enabled"}, enabled: true},
+					&MockValidator{name: "network-check", runAfter: []string{"api-enabled", "quota-check"}, enabled: true},
+				}
+				resolver = validator.NewDependencyResolver(validators)
+			})
+
+			It("should render correct levels and all dependency edges", func() {
+				groups, _ := resolver.ResolveExecutionGroups()
+				mermaid := resolver.ToMermaidWithLevels(groups)
+
+				Expect(mermaid).To(ContainSubstring("flowchart TD"))
+				Expect(mermaid).To(ContainSubstring("subgraph \"Level 0\""))
+				Expect(mermaid).To(ContainSubstring("subgraph \"Level 1 - 2 Validators in Parallel\""))
+				Expect(mermaid).To(ContainSubstring("subgraph \"Level 2 - 2 Validators in Parallel\""))
+				Expect(mermaid).To(ContainSubstring("api-enabled --> wif-check"))
+				Expect(mermaid).To(ContainSubstring("quota-check --> wif-check"))
+				Expect(mermaid).To(ContainSubstring("iam-check --> api-enabled"))
+				Expect(mermaid).To(ContainSubstring("network-check --> api-enabled"))
+				Expect(mermaid).To(ContainSubstring("network-check --> quota-check"))
+			})
+		})
+	})
 })

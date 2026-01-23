@@ -2,6 +2,8 @@ package validators_test
 
 import (
 	"context"
+	"log/slog"
+	"os"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -26,10 +28,11 @@ var _ = Describe("QuotaCheckValidator", func() {
 		cfg, err := config.LoadFromEnv()
 		Expect(err).NotTo(HaveOccurred())
 
-		vctx = &validator.Context{
-			Config:  cfg,
-			Results: make(map[string]*validator.Result),
-		}
+		// Use NewContext constructor for proper initialization
+		logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+			Level: slog.LevelWarn,
+		}))
+		vctx = validator.NewContext(cfg, logger)
 	})
 
 	Describe("Metadata", func() {

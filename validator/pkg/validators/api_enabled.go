@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"google.golang.org/api/googleapi"
-	"validator/pkg/gcp"
 	"validator/pkg/validator"
 )
 
@@ -72,12 +71,12 @@ func (v *APIEnabledValidator) Validate(ctx context.Context, vctx *validator.Cont
 	ctx, cancel := context.WithTimeout(ctx, apiValidationTimeout)
 	defer cancel()
 
-	// Create Service Usage client (uses WIF implicitly)
-	factory := gcp.NewClientFactory(vctx.Config.ProjectID, slog.Default())
-	svc, err := factory.CreateServiceUsageService(ctx)
+	// Get Service Usage client from context (lazy initialization with least privilege)
+	// Only requests serviceusage.readonly scope when this validator actually runs
+	svc, err := vctx.GetServiceUsageService(ctx)
 	if err != nil {
 		// Log full error for debugging
-		slog.Error("Failed to create Service Usage client",
+		slog.Error("Failed to get Service Usage client",
 			"error", err.Error(),
 			"project_id", vctx.Config.ProjectID)
 
@@ -87,7 +86,7 @@ func (v *APIEnabledValidator) Validate(ctx context.Context, vctx *validator.Cont
 		return &validator.Result{
 			Status:  validator.StatusFailure,
 			Reason:  reason,
-			Message: fmt.Sprintf("Failed to create Service Usage client (check WIF configuration): %v", err),
+			Message: fmt.Sprintf("Failed to get Service Usage client (check WIF configuration): %v", err),
 			Details: map[string]interface{}{
 				//"error":       err.Error(),
 				"error_type": fmt.Sprintf("%T", err),

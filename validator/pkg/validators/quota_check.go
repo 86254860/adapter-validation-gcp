@@ -43,13 +43,13 @@ func (v *QuotaCheckValidator) Validate(ctx context.Context, vctx *validator.Cont
 	//
 	// Example implementation structure:
 	//
-	// factory := gcp.NewClientFactory(vctx.Config.ProjectID, slog.Default())
-	// computeSvc, err := factory.CreateComputeService(ctx)
+	// // Get Compute service from context (lazy initialization with least privilege)
+	// computeSvc, err := vctx.GetComputeService(ctx)
 	// if err != nil {
 	//     return &validator.Result{
 	//         Status:  validator.StatusFailure,
 	//         Reason:  "ComputeClientError",
-	//         Message: fmt.Sprintf("Failed to create Compute client: %v", err),
+	//         Message: fmt.Sprintf("Failed to get Compute client: %v", err),
 	//     }
 	// }
 	//

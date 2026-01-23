@@ -54,6 +54,11 @@ func (e *Executor) ExecuteAll(ctx context.Context) ([]*Result, error) {
 	}
 
 	e.logger.Info("Execution plan created", "groups", len(groups))
+
+	// Log dependency graphs
+	e.logger.Debug("Validator dependency graph (raw dependencies):\n" + resolver.ToMermaid())
+	e.logger.Info("Validator execution plan (with levels):\n" + resolver.ToMermaidWithLevels(groups))
+
 	for _, group := range groups {
 		e.logger.Debug("Execution group",
 			"level", group.Level,

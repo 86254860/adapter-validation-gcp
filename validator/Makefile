@@ -86,6 +86,33 @@ test-coverage-html: test-coverage ## Generate HTML coverage report
 	$(GOCMD) tool cover -html=$(COVERAGE_OUT) -o $(COVERAGE_HTML)
 	@echo "HTML coverage report generated: $(COVERAGE_HTML)"
 
+.PHONY: test-integration
+test-integration: ## Run integration tests (requires GCP credentials and PROJECT_ID)
+	@echo "Running integration tests..."
+	@if [ -z "$$PROJECT_ID" ]; then \
+		echo "❌ ERROR: PROJECT_ID environment variable is not set"; \
+		echo ""; \
+		echo "Integration tests require a real GCP project."; \
+		echo "Please set PROJECT_ID:"; \
+		echo "  export PROJECT_ID=your-gcp-project-id"; \
+		echo ""; \
+		echo "You also need valid GCP credentials:"; \
+		echo "  gcloud auth application-default login"; \
+		echo "  OR"; \
+		echo "  export GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@if [ -d "test/integration" ] && [ -n "$$(find test/integration -name '*_test.go' 2>/dev/null)" ]; then \
+		echo "PROJECT_ID: $$PROJECT_ID"; \
+		echo "Running tests with -tags=integration..."; \
+		$(GOTEST) -tags=integration -v $(RACE_FLAG) -timeout $(TEST_TIMEOUT) ./test/integration/...; \
+	else \
+		echo "No integration tests found in test/integration directory"; \
+		echo "Please add integration tests to test/integration directory"; \
+		exit 0; \
+	fi
+
 .PHONY: lint
 lint: ## Run golangci-lint
 	@echo "Running golangci-lint..."

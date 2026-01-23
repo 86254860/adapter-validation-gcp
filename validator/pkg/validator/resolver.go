@@ -146,3 +146,75 @@ func (r *DependencyResolver) detectCycles() error {
 
 	return nil
 }
+
+// ToMermaid generates a Mermaid flowchart showing raw dependency relationships
+// This visualization shows which validators depend on others based on their RunAfter declarations
+func (r *DependencyResolver) ToMermaid() string {
+	var result string
+	result += "flowchart TD\n"
+
+	// Collect all validators to ensure orphans are shown
+	allValidators := make(map[string]bool)
+	for name := range r.validators {
+		allValidators[name] = true
+	}
+
+	// Track which validators have dependencies
+	hasDependencies := make(map[string]bool)
+
+	// Add edges for all dependencies
+	for name, v := range r.validators {
+		meta := v.Metadata()
+		if len(meta.RunAfter) > 0 {
+			hasDependencies[name] = true
+			for _, dep := range meta.RunAfter {
+				// Only show edge if dependency exists in our validator set
+				if _, exists := r.validators[dep]; exists {
+					result += fmt.Sprintf("    %s --> %s\n", name, dep)
+				}
+			}
+		}
+	}
+
+	// Add standalone nodes (validators with no dependencies)
+	for name := range allValidators {
+		if !hasDependencies[name] {
+			result += fmt.Sprintf("    %s\n", name)
+		}
+	}
+
+	return result
+}
+
+// ToMermaidWithLevels generates a Mermaid flowchart showing the execution plan with levels
+// Each level is rendered as a subgraph showing which validators run in parallel
+func (r *DependencyResolver) ToMermaidWithLevels(groups []ExecutionGroup) string {
+	var result string
+	result += "flowchart TD\n"
+
+	// Create subgraphs for each level
+	for _, group := range groups {
+		parallelInfo := ""
+		if len(group.Validators) > 1 {
+			parallelInfo = fmt.Sprintf(" - %d Validators in Parallel", len(group.Validators))
+		}
+		result += fmt.Sprintf("    subgraph \"Level %d%s\"\n", group.Level, parallelInfo)
+		for _, v := range group.Validators {
+			meta := v.Metadata()
+			result += fmt.Sprintf("        %s\n", meta.Name)
+		}
+		result += "    end\n\n"
+	}
+
+	// Add dependency edges
+	for _, v := range r.validators {
+		meta := v.Metadata()
+		for _, dep := range meta.RunAfter {
+			if _, exists := r.validators[dep]; exists {
+				result += fmt.Sprintf("    %s --> %s\n", meta.Name, dep)
+			}
+		}
+	}
+
+	return result
+}

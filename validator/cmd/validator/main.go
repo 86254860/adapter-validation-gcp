@@ -53,11 +53,9 @@ func main() {
 		}
 	}
 
-	// Create validation context
-	vctx := &validator.Context{
-		Config:  cfg,
-		Results: make(map[string]*validator.Result),
-	}
+	// Create validation context with lazy client initialization
+	// Services will only be created when validators actually need them (least privilege)
+	vctx := validator.NewContext(cfg, logger)
 
 	// Create context with timeout (max time for all validators)
 	validationTimeout := time.Duration(cfg.MaxWaitTimeSeconds) * time.Second
